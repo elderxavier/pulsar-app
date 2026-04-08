@@ -1,11 +1,11 @@
 export const environment = {
   production: true,
   firebase: {
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    appId: 'YOUR_APP_ID',
+    apiKey: 'AIzaSyD3iZLF6n8SoBty-i9bOYxKHd84-ujVdfY',
+    authDomain: 'pulsar-bab90.firebaseapp.com',
+    projectId: 'pulsar-bab90',
+    storageBucket: 'pulsar-bab90.firebasestorage.app',
+    messagingSenderId: '200092635840',
+    appId: '1:200092635840:web:f6e6be31e6278a6dc85325',
   },
 };
