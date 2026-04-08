@@ -1,0 +1,26 @@
+# Web
+web/node_modules/
+web/dist/
+web/.angular/
+
+# Mobile
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/local.properties
+mobile/app/google-services.json
+mobile/**/*.iml
+mobile/.idea/
+
+# Firebase
+firebase/.firebase/
+firebase/.firebaserc
+
+# Environment
+*.env
+*.env.local
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db

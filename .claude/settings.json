@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(sudo npm:*)",
+      "Bash(npx @angular/cli@latest new web --directory web --routing true --style css --skip-git true --no-interactive)"
+    ]
+  }
+}

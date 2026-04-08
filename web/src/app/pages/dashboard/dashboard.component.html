@@ -1,0 +1,92 @@
+<div class="min-h-screen bg-[#0A0A0A] text-white flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
+    <div class="p-6 border-b border-zinc-800">
+      <h1 class="text-2xl font-bold text-[#00FFD1] tracking-widest">PULSAR</h1>
+      <p class="text-zinc-500 text-xs mt-1">Painel PRO</p>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1">
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-800 text-[#00FFD1] text-sm font-medium cursor-pointer">
+        <span>Radar</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-zinc-400 text-sm transition-colors cursor-pointer">
+        <span>Posts Ativos</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-zinc-400 text-sm transition-colors cursor-pointer">
+        <span>Flash Promo</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-zinc-800">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 rounded-full bg-[#00FFD1]/20 flex items-center justify-center text-[#00FFD1] text-sm font-bold">
+          {{ auth.currentUser()?.email?.[0]?.toUpperCase() }}
+        </div>
+        <p class="text-zinc-300 text-sm truncate">{{ auth.currentUser()?.email }}</p>
+      </div>
+      <button
+        (click)="logout()"
+        class="w-full text-sm text-zinc-500 hover:text-red-400 transition-colors text-left px-2"
+      >
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-zinc-900/50 border-b border-zinc-800 px-8 py-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-white">Posts Ativos no Radar</h2>
+        <p class="text-zinc-500 text-sm">{{ posts().length }} post(s) ativos nas ultimas 6 horas</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#00FFD1] animate-pulse"></span>
+        <span class="text-[#00FFD1] text-sm">Ao vivo</span>
+      </div>
+    </header>
+
+    <!-- Posts Grid -->
+    <div class="flex-1 p-8 overflow-auto">
+      @if (posts().length === 0) {
+        <div class="flex flex-col items-center justify-center h-64 text-center">
+          <div class="text-5xl mb-4 opacity-20">📡</div>
+          <p class="text-zinc-500 text-lg">Nenhum post ativo no momento</p>
+          <p class="text-zinc-600 text-sm mt-1">Posts do app mobile aparecerao aqui em tempo real</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          @for (post of posts(); track post.id) {
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors">
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-[#00FFD1]/10 flex items-center justify-center text-[#00FFD1] text-xs font-bold">
+                    {{ post.userName[0]?.toUpperCase() ?? '?' }}
+                  </div>
+                  <span class="text-zinc-300 text-sm font-medium">{{ post.userName }}</span>
+                </div>
+                <span class="text-xs text-[#00FFD1] bg-[#00FFD1]/10 px-2 py-1 rounded-full">
+                  {{ timeRemaining(post.expiresAt) }}
+                </span>
+              </div>
+
+              <!-- Content -->
+              <p class="text-white text-sm leading-relaxed mb-4">{{ post.content }}</p>
+
+              <!-- Coords -->
+              <div class="flex items-center gap-2 text-zinc-600 text-xs">
+                <span>📍</span>
+                <span>{{ formatCoords(post.latitude, post.longitude) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>
