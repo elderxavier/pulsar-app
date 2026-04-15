@@ -1,11 +1,11 @@
 package com.pulsar.app.ui.screens
 
-import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,21 +15,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
+import androidx.compose.ui.viewinterop.AndroidView
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import com.pulsar.app.data.model.Post
 import com.pulsar.app.ui.theme.PulsarBackground
 import com.pulsar.app.ui.theme.PulsarCyan
-import com.pulsar.app.ui.theme.PulsarSurface
 import com.pulsar.app.viewmodel.AuthViewModel
 import com.pulsar.app.viewmodel.PostViewModel
-import java.util.Date
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -38,92 +41,119 @@ fun MapScreen(
     postViewModel: PostViewModel,
     onCreatePost: () -> Unit,
 ) {
+    val context = LocalContext.current
     val posts by postViewModel.posts.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PulsarBackground)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF111111))
-                    .padding(horizontal = 20.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(PulsarCyan, CircleShape)
-                    )
-                    Text(
-                        text = "PULSAR",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PulsarCyan,
-                        letterSpacing = 4.sp
-                    )
-                }
-                IconButton(onClick = { authViewModel.logout() }) {
-                    Icon(Icons.Default.ExitToApp, contentDescription = "Sair", tint = Color.Gray)
-                }
-            }
+    // Configurar osmdroid
+    Configuration.getInstance().userAgentValue = context.packageName
 
-            // Posts count
+    var mapView by remember { mutableStateOf<MapView?>(null) }
+    var locationOverlay by remember { mutableStateOf<MyLocationNewOverlay?>(null) }
+
+    // Atualizar marcadores quando posts mudam
+    LaunchedEffect(posts) {
+        val map = mapView ?: return@LaunchedEffect
+        // Remove marcadores de posts antigos (mantém locationOverlay)
+        map.overlays.removeAll { it is Marker }
+        posts.forEach { post ->
+            val marker = Marker(map).apply {
+                position = GeoPoint(post.latitude, post.longitude)
+                title = post.userName
+                snippet = post.content.take(60) + if (post.content.length > 60) "..." else ""
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                icon = createPulsarMarkerIcon(context)
+            }
+            map.overlays.add(marker)
+        }
+        map.invalidate()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Mapa OSM
+        AndroidView(
+            factory = { ctx ->
+                MapView(ctx).apply {
+                    setTileSource(TileSourceFactory.MAPNIK)
+                    setMultiTouchControls(true)
+                    controller.setZoom(15.0)
+                    controller.setCenter(GeoPoint(-23.5505, -46.6333)) // São Paulo padrão
+
+                    // Camada de localização do usuário
+                    val myLocation = MyLocationNewOverlay(GpsMyLocationProvider(ctx), this)
+                    myLocation.enableMyLocation()
+                    myLocation.enableFollowLocation()
+                    myLocation.runOnFirstFix {
+                        post {
+                            controller.animateTo(myLocation.myLocation)
+                        }
+                    }
+                    overlays.add(myLocation)
+                    locationOverlay = myLocation
+                    mapView = this
+
+                    // Estilo escuro via filtro de cor
+                    setBackgroundColor(android.graphics.Color.parseColor("#0A0A0A"))
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { map ->
+                mapView = map
+            }
+        )
+
+        // Top Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(androidx.compose.ui.graphics.Color(0xCC0A0A0A))
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "Radar ao vivo",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(PulsarCyan, CircleShape)
                 )
+                Text(
+                    text = "PULSAR",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PulsarCyan,
+                    letterSpacing = 4.sp
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     color = PulsarCyan.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        text = "${posts.size} ativos",
+                        text = "${posts.size} pulsos",
                         color = PulsarCyan,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
-            }
-
-            // Posts list
-            if (posts.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                IconButton(
+                    onClick = { authViewModel.logout() },
+                    modifier = Modifier.size(32.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("📡", fontSize = 48.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Nenhum post nas proximidades", color = Color.Gray, fontSize = 14.sp)
-                        Text("Seja o primeiro a pulsar!", color = Color(0xFF555555), fontSize = 12.sp)
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(posts, key = { it.id }) { post ->
-                        PostCard(post = post)
-                    }
-                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                    Icon(
+                        Icons.Default.ExitToApp,
+                        contentDescription = "Sair",
+                        tint = androidx.compose.ui.graphics.Color.Gray,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
@@ -133,78 +163,43 @@ fun MapScreen(
             onClick = onCreatePost,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
                 .padding(24.dp),
             containerColor = PulsarCyan,
             contentColor = PulsarBackground,
             shape = CircleShape
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Novo post", modifier = Modifier.size(28.dp))
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Novo pulso",
+                modifier = Modifier.size(28.dp)
+            )
         }
     }
 }
 
-@Composable
-fun PostCard(post: Post) {
-    val timeLeft = remember(post.expiresAt) {
-        val diff = post.expiresAt.toDate().time - Date().time
-        if (diff <= 0) "Expirado"
-        else {
-            val h = diff / 3600000
-            val m = (diff % 3600000) / 60000
-            if (h > 0) "${h}h ${m}m" else "${m}m"
-        }
+fun createPulsarMarkerIcon(context: android.content.Context): android.graphics.drawable.Drawable {
+    val size = 40
+    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    val paintOuter = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#2200FFD1")
+        style = Paint.Style.FILL
+    }
+    val paintInner = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#00FFD1")
+        style = Paint.Style.FILL
+    }
+    val paintBorder = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#00FFD1")
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
     }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = PulsarSurface,
-        tonalElevation = 2.dp
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(
-                        shape = CircleShape,
-                        color = PulsarCyan.copy(alpha = 0.15f),
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = post.userName.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
-                                color = PulsarCyan,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    Text(post.userName, color = Color(0xFFCCCCCC), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                }
-                Text(
-                    text = timeLeft,
-                    color = PulsarCyan,
-                    fontSize = 11.sp,
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = post.content,
-                color = Color.White,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "📍 ${"%.4f".format(post.latitude)}, ${"%.4f".format(post.longitude)}",
-                color = Color(0xFF666666),
-                fontSize = 11.sp
-            )
-        }
-    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, paintOuter)
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2, paintBorder)
+    canvas.drawCircle(size / 2f, size / 2f, 8f, paintInner)
+
+    return android.graphics.drawable.BitmapDrawable(context.resources, bitmap)
 }

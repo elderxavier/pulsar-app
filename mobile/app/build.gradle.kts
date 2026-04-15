@@ -61,5 +61,8 @@ dependencies {
     // Location
     implementation(libs.play.services.location)
 
+    // Map (OSMDroid - OpenStreetMap, sem chave API)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     debugImplementation(libs.androidx.ui.tooling)
 }

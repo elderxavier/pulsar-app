@@ -1,26 +1,67 @@
 @import "tailwindcss";
+@source "./**/*.html";
+@source "./**/*.ts";
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: 'Inter', sans-serif;
-  background-color: #0A0A0A;
+  background-color: #060608;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(0, 255, 209, 0.2);
   color: #ffffff;
 }
 
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid rgba(0, 255, 209, 0.4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00FFD1;
+  background: rgba(0, 255, 209, 0.3);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Input autofill override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px #16161a inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #00FFD1;
+  transition: background-color 5000s ease-in-out 0s;
 }

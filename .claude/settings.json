@@ -3,7 +3,12 @@
     "allow": [
       "Bash(npm create:*)",
       "Bash(sudo npm:*)",
-      "Bash(npx @angular/cli@latest new web --directory web --routing true --style css --skip-git true --no-interactive)"
+      "Bash(npx @angular/cli@latest new web --directory web --routing true --style css --skip-git true --no-interactive)",
+      "WebFetch(domain:app.e-mec.net.br)",
+      "Bash(~/Android/Sdk/emulator/emulator -avd emec_4gb -no-snapshot-load)",
+      "Bash(echo \"Emulador iniciado com PID $!\")",
+      "Bash(adb wait-for-device:*)",
+      "Bash(adb shell:*)"
     ]
   }
 }
