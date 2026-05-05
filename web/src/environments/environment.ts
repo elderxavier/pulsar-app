@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
+  // DEV ONLY: ignora autenticação e injeta usuário fake. NUNCA habilitar em produção.
+  bypassAuth: true,
   firebase: {
     apiKey: 'AIzaSyD3iZLF6n8SoBty-i9bOYxKHd84-ujVdfY',
     authDomain: 'pulsar-bab90.firebaseapp.com',

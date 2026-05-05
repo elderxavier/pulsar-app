@@ -24,3 +24,7 @@ firebase/.firebaserc
 # OS
 .DS_Store
 Thumbs.db
+.claude/*
+pulsar--obsidian/*
+.swarm/*
+.github/*

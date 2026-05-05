@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-05-05T00:53:12.723Z",
+  "projectRoot": "/shared/pulsar-app",
+  "structure": {
+    "hasPackageJson": false,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1777942392723
+}

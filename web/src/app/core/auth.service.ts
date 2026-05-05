@@ -7,6 +7,15 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from './firebase';
+import { environment } from '../../environments/environment';
+
+const FAKE_USER = {
+  uid: 'dev-bypass-user',
+  email: 'dev@pulsar.local',
+  displayName: 'Dev Bypass',
+  emailVerified: true,
+  isAnonymous: false,
+} as unknown as User;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,6 +23,11 @@ export class AuthService {
   loading = signal(true);
 
   constructor() {
+    if (!environment.production && environment.bypassAuth) {
+      this.currentUser.set(FAKE_USER);
+      this.loading.set(false);
+      return;
+    }
     onAuthStateChanged(auth, (user) => {
       this.currentUser.set(user);
       this.loading.set(false);
@@ -21,6 +35,10 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
+    if (!environment.production && environment.bypassAuth) {
+      this.currentUser.set(FAKE_USER);
+      return { user: FAKE_USER } as any;
+    }
     return signInWithEmailAndPassword(auth, email, password);
   }
 

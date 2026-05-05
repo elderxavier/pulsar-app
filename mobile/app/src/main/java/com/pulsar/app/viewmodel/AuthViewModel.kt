@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.pulsar.app.config.DevConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,6 +24,22 @@ class AuthViewModel : ViewModel() {
 
     init {
         auth.addAuthStateListener { _user.value = it.currentUser }
+        if (DevConfig.BYPASS_AUTH && auth.currentUser == null) {
+            bypassLogin()
+        }
+    }
+
+    private fun bypassLogin() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                auth.signInAnonymously().await()
+            } catch (e: Exception) {
+                _error.value = "Bypass falhou: ${e.message}. Habilite Anonymous Auth no Firebase."
+            } finally {
+                _loading.value = false
+            }
+        }
     }
 
     fun login(email: String, password: String) {
