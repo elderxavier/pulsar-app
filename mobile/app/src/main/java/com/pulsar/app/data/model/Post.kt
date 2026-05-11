@@ -5,6 +5,7 @@ import com.google.firebase.firestore.GeoPoint
 
 data class Post(
     val id: String = "",
+    val title: String = "",
     val content: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
@@ -12,5 +13,8 @@ data class Post(
     val userId: String = "",
     val userName: String = "",
     val createdAt: Timestamp = Timestamp.now(),
+    val startsAt: Timestamp = Timestamp.now(),
     val expiresAt: Timestamp = Timestamp.now(),
+    val imageUrl: String = "",
+    val videoUrl: String = "",
 )

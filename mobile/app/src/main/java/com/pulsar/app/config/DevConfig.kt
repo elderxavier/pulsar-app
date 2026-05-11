@@ -7,5 +7,5 @@ package com.pulsar.app.config
  * no Firebase. Requer "Anonymous" habilitado em Firebase Authentication.
  */
 object DevConfig {
-    const val BYPASS_AUTH: Boolean = true
+    const val BYPASS_AUTH: Boolean = false
 }

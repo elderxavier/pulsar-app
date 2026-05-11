@@ -3,7 +3,12 @@ package com.pulsar.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.pulsar.app.config.DevConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +54,7 @@ class AuthViewModel : ViewModel() {
             try {
                 auth.signInWithEmailAndPassword(email, password).await()
             } catch (e: Exception) {
-                _error.value = e.message ?: "Erro ao fazer login"
+                _error.value = mapLoginError(e)
             } finally {
                 _loading.value = false
             }
@@ -63,7 +68,35 @@ class AuthViewModel : ViewModel() {
             try {
                 auth.createUserWithEmailAndPassword(email, password).await()
             } catch (e: Exception) {
-                _error.value = e.message ?: "Erro ao criar conta"
+                _error.value = mapRegisterError(e)
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    private fun mapLoginError(e: Exception): String = when (e) {
+        is FirebaseAuthInvalidCredentialsException,
+        is FirebaseAuthInvalidUserException -> "Email ou senha incorretos."
+        else -> "Erro ao fazer login. Tente novamente."
+    }
+
+    private fun mapRegisterError(e: Exception): String = when (e) {
+        is FirebaseAuthWeakPasswordException -> "Senha muito fraca. Use pelo menos 6 caracteres."
+        is FirebaseAuthInvalidCredentialsException -> "Email inválido."
+        is FirebaseAuthUserCollisionException -> "Este email já está em uso. Tente entrar."
+        else -> "Erro ao criar conta. Tente novamente."
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(credential).await()
+            } catch (e: Exception) {
+                _error.value = "Erro no login com Google: ${e.message}"
             } finally {
                 _loading.value = false
             }

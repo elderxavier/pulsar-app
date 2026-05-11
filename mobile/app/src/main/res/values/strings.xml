@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pulsar</string>
+    <!-- Firebase Console > Authentication > Google > Web SDK configuration > Web client ID -->
+    <string name="google_web_client_id">200092635840-vsekv87lshievkekc9sirnsim6d501bd.apps.googleusercontent.com</string>
 </resources>

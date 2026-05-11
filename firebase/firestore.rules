@@ -4,8 +4,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     match /posts/{postId} {
-      // Qualquer pessoa pode LER posts que ainda não expiraram
-      allow read: if request.time < resource.data.expiresAt;
+      // Usuários autenticados podem ler posts (filtro de expiração é feito na query)
+      allow read: if request.auth != null;
 
       // Apenas usuários autenticados podem CRIAR posts
       allow create: if request.auth != null

@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.navigation.compose)
 
     // Firebase
@@ -58,8 +59,14 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
 
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
     // Location
     implementation(libs.play.services.location)
+
+    // Image loading
+    implementation(libs.coil.compose)
 
     // Map (OSMDroid - OpenStreetMap, sem chave API)
     implementation("org.osmdroid:osmdroid-android:6.1.20")

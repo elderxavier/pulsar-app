@@ -15,6 +15,20 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'dashboard' },
+  {
+    path: 'map',
+    loadComponent: () =>
+      import('./pages/map/map.component').then((m) => m.MapComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'create',
+    loadComponent: () =>
+      import('./pages/create-post/create-post.component').then(
+        (m) => m.CreatePostComponent
+      ),
+    canActivate: [authGuard],
+  },
+  { path: '', redirectTo: 'map', pathMatch: 'full' },
+  { path: '**', redirectTo: 'map' },
 ];
