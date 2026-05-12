@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@source inline("html");
+@source "./app/**/*.{html,ts}";
+@source "./**/*.html";
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; background: #0A0A0A; color: #fff; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+app-root { display: block; min-height: 100vh; }
+::selection { background: rgba(0,255,209,0.25); }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+.leaflet-control-zoom a { background: rgba(10,10,10,0.85) !important; color: #00FFD1 !important; border: 1px solid rgba(255,255,255,0.06) !important; }
