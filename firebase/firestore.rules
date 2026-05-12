@@ -3,24 +3,124 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /posts/{postId} {
-      // Usuários autenticados podem ler posts (filtro de expiração é feito na query)
-      allow read: if request.auth != null;
+    // ============================================================
+    // Helpers — admin é HÍBRIDO: custom claim OU doc em /admins/{uid}
+    // ============================================================
+    function isSignedIn()   { return request.auth != null; }
 
-      // Apenas usuários autenticados podem CRIAR posts
-      allow create: if request.auth != null
+    function hasAdminClaim() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+    function hasAdminDoc() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.admin == true;
+    }
+    function isAdmin() { return hasAdminClaim() || hasAdminDoc(); }
+
+    function hasSuperClaim() {
+      return isSignedIn() && request.auth.token.superAdmin == true;
+    }
+    function hasSuperDoc() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.superAdmin == true;
+    }
+    function isSuperAdmin() { return hasSuperClaim() || hasSuperDoc(); }
+
+    function isSelf(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // ============================================================
+    // /admins/{uid} — fonte de bootstrap (criar via Console Firebase)
+    //   Estrutura: { admin: true, superAdmin?: true, email?: string,
+    //                createdAt?: timestamp, createdBy?: string }
+    // ============================================================
+    match /admins/{uid} {
+      // Cada usuário pode ler o próprio doc (necessário p/ fallback do auth)
+      // Admin pode ler todos
+      allow read: if isSelf(uid) || isAdmin();
+      // Apenas super-admin pode promover/revogar via app
+      // (bootstrap inicial é feito manualmente pelo Console)
+      allow write: if isSuperAdmin();
+    }
+
+    // ============================================================
+    // /posts — pulsos geolocalizados efêmeros
+    // ============================================================
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.content is string
         && request.resource.data.content.size() > 0
         && request.resource.data.content.size() <= 280
-        && request.resource.data.expiresAt == request.resource.data.createdAt + duration.value(6, 'h');
+        && request.resource.data.expiresAt > request.resource.data.createdAt
+        && request.resource.data.expiresAt <= request.resource.data.createdAt + duration.value(72, 'h')
+        && request.resource.data.expiresAt >= request.resource.data.createdAt + duration.value(1, 'h');
 
-      // Apenas o dono pode DELETAR o próprio post
-      allow delete: if request.auth != null
-        && request.auth.uid == resource.data.userId;
+      allow update: if isAdmin() || (
+        isSelf(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.expiresAt == resource.data.expiresAt
+        && request.resource.data.latitude == resource.data.latitude
+        && request.resource.data.longitude == resource.data.longitude
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 280
+        && (!('title' in request.resource.data) || request.resource.data.title is string)
+      );
 
-      // Ninguém pode editar posts após criação
-      allow update: if false;
+      allow delete: if isAdmin() || isSelf(resource.data.userId);
+    }
+
+    // ============================================================
+    // /users — perfis
+    // ============================================================
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isSelf(uid)
+        && !('banned' in request.resource.data)
+        && !('adminRequested' in request.resource.data);
+      allow update: if isAdmin() || (
+        isSelf(uid)
+        && (!('banned' in request.resource.data)
+            || request.resource.data.banned == resource.data.get('banned', false))
+        && (!('adminRequested' in request.resource.data)
+            || request.resource.data.adminRequested == resource.data.get('adminRequested', false))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // /reports — denúncias
+    // ============================================================
+    match /reports/{reportId} {
+      allow create: if isSignedIn()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.postId is string
+        && request.resource.data.reason is string;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // /config — configuração global (superadmin escreve)
+    // ============================================================
+    match /config/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    // ============================================================
+    // /audit — log append-only
+    // ============================================================
+    match /audit/{entryId} {
+      allow read:   if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
     }
   }
 }

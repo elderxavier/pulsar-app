@@ -1,5 +1,4 @@
 export const environment = {
-  bypassAuth: false,
   production: true,
   firebase: {
     apiKey: 'AIzaSyD3iZLF6n8SoBty-i9bOYxKHd84-ujVdfY',

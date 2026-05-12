@@ -17,4 +17,17 @@ data class Post(
     val expiresAt: Timestamp = Timestamp.now(),
     val imageUrl: String = "",
     val videoUrl: String = "",
+    val likedBy: List<String> = emptyList(),
+    val likesCount: Int = 0,
+    val commentsCount: Int = 0,
+    val userPhotoURL: String = "",
+)
+
+data class Comment(
+    val id: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val userPhotoURL: String = "",
+    val content: String = "",
+    val createdAt: Timestamp = Timestamp.now(),
 )

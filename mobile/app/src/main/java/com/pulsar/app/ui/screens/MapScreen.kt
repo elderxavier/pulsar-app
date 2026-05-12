@@ -20,9 +20,14 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -98,11 +103,16 @@ fun MapScreen(
     var selectedMapType by remember { mutableStateOf(MapType.PADRAO) }
     var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
     var showNearbySheet by remember { mutableStateOf(false) }
-    var selectedPost by remember { mutableStateOf<com.pulsar.app.data.model.Post?>(null) }
+    var selectedPostId by remember { mutableStateOf<String?>(null) }
+    val selectedPost = remember(posts, selectedPostId) {
+        selectedPostId?.let { id -> posts.find { it.id == id } }
+    }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val postSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var radiusKm by remember { mutableIntStateOf(15) }
     var searchQuery by remember { mutableStateOf("") }
+    var showProfile by remember { mutableStateOf(false) }
+    val profileSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val nearbyPosts = remember(posts, userLocation, radiusKm) {
         val loc = userLocation ?: return@remember emptyList()
@@ -165,7 +175,7 @@ fun MapScreen(
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 icon = createPulsarMarkerIcon(context)
                 setOnMarkerClickListener { _, _ ->
-                    selectedPost = post
+                    selectedPostId = post.id
                     true
                 }
             }
@@ -263,6 +273,28 @@ fun MapScreen(
                             contentDescription = "Lista de pulsos",
                             tint = PulsarCyan,
                             modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+                // Avatar / Perfil
+                val currentUser by authViewModel.user.collectAsState()
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(PulsarCyan.copy(alpha = 0.2f))
+                        .clickable { showProfile = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val myPhoto by authViewModel.myPhotoURL.collectAsState()
+                    if (myPhoto.isNotEmpty()) {
+                        AsyncImage(model = myPhoto, contentDescription = "Perfil", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    } else {
+                        Text(
+                            (currentUser?.displayName ?: currentUser?.email ?: "A").firstOrNull()?.uppercase() ?: "A",
+                            color = PulsarCyan,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
                         )
                     }
                 }
@@ -515,7 +547,7 @@ fun MapScreen(
                                 onClick = {
                                     mapView?.controller?.animateTo(GeoPoint(post.latitude, post.longitude))
                                     showNearbySheet = false
-                                    selectedPost = post
+                                    selectedPostId = post.id
                                 }
                             ) {
                                 Row(
@@ -567,17 +599,133 @@ fun MapScreen(
             PostDetailSheet(
                 post = post,
                 isOwner = post.userId == currentUid,
+                currentUid = currentUid,
+                viewModel = postViewModel,
                 sheetState = postSheetState,
-                onDismiss = { selectedPost = null },
+                onDismiss = { selectedPostId = null },
                 onEdit = { newContent ->
                     postViewModel.updatePost(post.id, newContent)
-                    selectedPost = null
+                    selectedPostId = null
                 },
                 onDelete = {
                     postViewModel.deletePost(post.id)
-                    selectedPost = null
+                    selectedPostId = null
                 }
             )
+        }
+
+        // Bottom sheet — perfil
+        if (showProfile) {
+            ProfileSheet(
+                authViewModel = authViewModel,
+                sheetState = profileSheetState,
+                onDismiss = { showProfile = false },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileSheet(
+    authViewModel: AuthViewModel,
+    sheetState: SheetState,
+    onDismiss: () -> Unit,
+) {
+    val user by authViewModel.user.collectAsState()
+    val loading by authViewModel.loading.collectAsState()
+    val myPhoto by authViewModel.myPhotoURL.collectAsState()
+    var nameInput by remember { mutableStateOf(user?.displayName ?: "") }
+    val ctx = LocalContext.current
+
+    val pickImage = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) authViewModel.uploadAvatar(ctx, uri)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = androidx.compose.ui.graphics.Color(0xFF121212),
+    ) {
+        Column(
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("Meu perfil", color = androidx.compose.ui.graphics.Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+            // Avatar grande clicável
+            Box(
+                modifier = androidx.compose.ui.Modifier
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(PulsarCyan.copy(alpha = 0.2f))
+                    .clickable { pickImage.launch("image/*") },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (myPhoto.isNotEmpty()) {
+                    AsyncImage(model = myPhoto, contentDescription = "Avatar", contentScale = ContentScale.Crop, modifier = androidx.compose.ui.Modifier.fillMaxSize())
+                } else {
+                    Text(
+                        (user?.displayName ?: user?.email ?: "A").firstOrNull()?.uppercase() ?: "A",
+                        color = PulsarCyan,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 36.sp,
+                    )
+                }
+                if (loading) {
+                    Box(modifier = androidx.compose.ui.Modifier.matchParentSize().background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.5f)), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PulsarCyan, modifier = androidx.compose.ui.Modifier.size(28.dp), strokeWidth = 3.dp)
+                    }
+                }
+            }
+            Text("Toque para alterar (máx 2MB)", color = androidx.compose.ui.graphics.Color(0xFF888888), fontSize = 11.sp)
+
+            Spacer(modifier = androidx.compose.ui.Modifier.height(4.dp))
+
+            // Nome
+            OutlinedTextField(
+                value = nameInput,
+                onValueChange = { if (it.length <= 40) nameInput = it },
+                label = { Text("Nome de exibição") },
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = PulsarCyan,
+                    unfocusedBorderColor = androidx.compose.ui.graphics.Color(0xFF333333),
+                    focusedLabelColor = PulsarCyan,
+                    unfocusedLabelColor = androidx.compose.ui.graphics.Color(0xFF888888),
+                    focusedTextColor = androidx.compose.ui.graphics.Color.White,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
+                    cursorColor = PulsarCyan,
+                ),
+            )
+
+            // Email (readonly)
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = androidx.compose.ui.graphics.Color(0xFF1A1A1A),
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = androidx.compose.ui.Modifier.padding(12.dp)) {
+                    Text("Email", color = androidx.compose.ui.graphics.Color(0xFF888888), fontSize = 11.sp)
+                    Text(user?.email ?: "—", color = androidx.compose.ui.graphics.Color.White, fontSize = 13.sp, modifier = androidx.compose.ui.Modifier.padding(top = 2.dp))
+                }
+            }
+
+            Button(
+                onClick = { authViewModel.updateDisplayName(nameInput.trim()) { ok -> if (ok) onDismiss() } },
+                enabled = !loading && nameInput.isNotBlank(),
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PulsarCyan, contentColor = PulsarBackground),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text("Salvar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            }
         }
     }
 }
@@ -587,6 +735,8 @@ fun MapScreen(
 fun PostDetailSheet(
     post: com.pulsar.app.data.model.Post,
     isOwner: Boolean,
+    currentUid: String?,
+    viewModel: PostViewModel,
     sheetState: SheetState,
     onDismiss: () -> Unit,
     onEdit: (String) -> Unit,
@@ -596,6 +746,16 @@ fun PostDetailSheet(
     var showEditDialog by remember { mutableStateOf(false) }
     var editContent by remember { mutableStateOf(post.content) }
     var showImageFullscreen by remember { mutableStateOf(false) }
+    var commentText by remember { mutableStateOf("") }
+
+    val commentsByPost by viewModel.comments.collectAsState()
+    val comments = commentsByPost[post.id] ?: emptyList()
+    val liked = currentUid != null && post.likedBy.contains(currentUid)
+
+    DisposableEffect(post.id) {
+        viewModel.listenComments(post.id)
+        onDispose { viewModel.stopListeningComments(post.id) }
+    }
 
     if (showDeleteConfirm) {
         AlertDialog(
@@ -711,15 +871,20 @@ fun PostDetailSheet(
                     Box(
                         modifier = androidx.compose.ui.Modifier
                             .size(36.dp)
-                            .background(PulsarCyan.copy(alpha = 0.2f), CircleShape),
+                            .clip(CircleShape)
+                            .background(PulsarCyan.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = post.userName.firstOrNull()?.uppercase() ?: "?",
-                            color = PulsarCyan,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
+                        if (post.userPhotoURL.isNotEmpty()) {
+                            AsyncImage(model = post.userPhotoURL, contentDescription = post.userName, contentScale = ContentScale.Crop, modifier = androidx.compose.ui.Modifier.fillMaxSize())
+                        } else {
+                            Text(
+                                text = post.userName.firstOrNull()?.uppercase() ?: "?",
+                                color = PulsarCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                     Column {
                         Text(post.userName, color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
@@ -769,6 +934,30 @@ fun PostDetailSheet(
                 }
             }
 
+            // Botão Traçar Rota
+            val routeContext = LocalContext.current
+            Button(
+                onClick = {
+                    val uri = android.net.Uri.parse(
+                        "https://www.google.com/maps/dir/?api=1&destination=${post.latitude},${post.longitude}&travelmode=driving"
+                    )
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+                    routeContext.startActivity(intent)
+                },
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PulsarCyan, contentColor = PulsarBackground),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(
+                        Icons.Default.Place,
+                        contentDescription = null,
+                        modifier = androidx.compose.ui.Modifier.size(18.dp)
+                    )
+                    Text("Traçar rota", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                }
+            }
+
             // Vídeo
             if (post.videoUrl.isNotEmpty()) {
                 Surface(
@@ -794,6 +983,158 @@ fun PostDetailSheet(
                             Text("Disponível no dispositivo de origem", color = androidx.compose.ui.graphics.Color(0xFF666666), fontSize = 11.sp)
                         }
                     }
+                }
+            }
+
+            // Like + contadores
+            HorizontalDivider(color = androidx.compose.ui.graphics.Color(0xFF2A2A2A))
+            Row(
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    onClick = { viewModel.toggleLike(post.id) },
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (liked) PulsarCyan.copy(alpha = 0.15f) else androidx.compose.ui.graphics.Color(0xFF1A1A1A),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (liked) PulsarCyan else androidx.compose.ui.graphics.Color(0xFF2A2A2A)),
+                ) {
+                    Row(
+                        modifier = androidx.compose.ui.Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Icon(
+                            if (liked) Icons.Default.ThumbUp else Icons.Outlined.ThumbUp,
+                            contentDescription = "Curtir",
+                            tint = if (liked) PulsarCyan else androidx.compose.ui.graphics.Color(0xFF999999),
+                            modifier = androidx.compose.ui.Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = "${post.likesCount}",
+                            color = if (liked) PulsarCyan else androidx.compose.ui.graphics.Color(0xFFCCCCCC),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
+                }
+                Text(
+                    text = "${comments.size} comentário${if (comments.size != 1) "s" else ""}",
+                    color = androidx.compose.ui.graphics.Color(0xFF888888),
+                    fontSize = 12.sp,
+                    modifier = androidx.compose.ui.Modifier.padding(start = 4.dp),
+                )
+            }
+
+            // Lista de comentários
+            if (comments.isNotEmpty()) {
+                var editingCommentId by remember { mutableStateOf<String?>(null) }
+                var editingText by remember { mutableStateOf("") }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    comments.forEach { c ->
+                        Surface(shape = RoundedCornerShape(10.dp), color = androidx.compose.ui.graphics.Color(0xFF1A1A1A)) {
+                            Row(modifier = androidx.compose.ui.Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Box(
+                                    modifier = androidx.compose.ui.Modifier.size(32.dp).clip(CircleShape).background(PulsarCyan.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (c.userPhotoURL.isNotEmpty()) {
+                                        AsyncImage(model = c.userPhotoURL, contentDescription = c.userName, contentScale = ContentScale.Crop, modifier = androidx.compose.ui.Modifier.fillMaxSize())
+                                    } else {
+                                        Text(c.userName.firstOrNull()?.uppercase() ?: "?", color = PulsarCyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    }
+                                }
+                                Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = androidx.compose.ui.Modifier.fillMaxWidth()) {
+                                        Text(c.userName, color = PulsarCyan, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                        if (c.userId == currentUid && editingCommentId != c.id) {
+                                            Row {
+                                                IconButton(onClick = { editingCommentId = c.id; editingText = c.content }, modifier = androidx.compose.ui.Modifier.size(24.dp)) {
+                                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = androidx.compose.ui.graphics.Color(0xFF666666), modifier = androidx.compose.ui.Modifier.size(14.dp))
+                                                }
+                                                IconButton(onClick = { viewModel.deleteComment(post.id, c.id) }, modifier = androidx.compose.ui.Modifier.size(24.dp)) {
+                                                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = androidx.compose.ui.graphics.Color(0xFF666666), modifier = androidx.compose.ui.Modifier.size(14.dp))
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (editingCommentId == c.id) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = androidx.compose.ui.Modifier.padding(top = 4.dp)) {
+                                            OutlinedTextField(
+                                                value = editingText,
+                                                onValueChange = { if (it.length <= 280) editingText = it },
+                                                modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                                                colors = OutlinedTextFieldDefaults.colors(
+                                                    focusedBorderColor = PulsarCyan,
+                                                    unfocusedBorderColor = androidx.compose.ui.graphics.Color(0xFF333333),
+                                                    focusedTextColor = androidx.compose.ui.graphics.Color.White,
+                                                    unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
+                                                    cursorColor = PulsarCyan,
+                                                ),
+                                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp),
+                                                maxLines = 4,
+                                            )
+                                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                TextButton(onClick = { editingCommentId = null }) { Text("Cancelar", fontSize = 12.sp) }
+                                                TextButton(
+                                                    onClick = { viewModel.updateComment(post.id, c.id, editingText); editingCommentId = null },
+                                                    enabled = editingText.isNotBlank(),
+                                                ) { Text("Salvar", color = PulsarCyan, fontSize = 12.sp) }
+                                            }
+                                        }
+                                    } else {
+                                        Text(c.content, color = androidx.compose.ui.graphics.Color(0xFFEEEEEE), fontSize = 13.sp, modifier = androidx.compose.ui.Modifier.padding(top = 2.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Input para novo comentário
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = commentText,
+                    onValueChange = { if (it.length <= 280) commentText = it },
+                    placeholder = { Text("Adicionar um comentário…", color = androidx.compose.ui.graphics.Color(0xFF666666), fontSize = 13.sp) },
+                    modifier = androidx.compose.ui.Modifier.weight(1f),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PulsarCyan,
+                        unfocusedBorderColor = androidx.compose.ui.graphics.Color(0xFF333333),
+                        focusedTextColor = androidx.compose.ui.graphics.Color.White,
+                        unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
+                        cursorColor = PulsarCyan,
+                        focusedContainerColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A),
+                        unfocusedContainerColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A),
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                )
+                IconButton(
+                    onClick = {
+                        if (commentText.isNotBlank()) {
+                            viewModel.addComment(post.id, commentText)
+                            commentText = ""
+                        }
+                    },
+                    enabled = commentText.isNotBlank(),
+                    modifier = androidx.compose.ui.Modifier
+                        .size(44.dp)
+                        .background(if (commentText.isNotBlank()) PulsarCyan else androidx.compose.ui.graphics.Color(0xFF333333), CircleShape),
+                ) {
+                    Icon(
+                        Icons.Default.Send,
+                        contentDescription = "Enviar",
+                        tint = if (commentText.isNotBlank()) PulsarBackground else androidx.compose.ui.graphics.Color(0xFF666666),
+                        modifier = androidx.compose.ui.Modifier.size(20.dp),
+                    )
                 }
             }
         }

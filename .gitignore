@@ -28,4 +28,11 @@ Thumbs.db
 pulsar--obsidian/*
 .swarm/*
 .github/*
-**.angular/*
+**/.angular/*
+web/package-lock.json
+web-v2/.angular/*
+**/node_modules/*
+**/dist/*
+firebase-debug.log
+*.log
+**/*.log
