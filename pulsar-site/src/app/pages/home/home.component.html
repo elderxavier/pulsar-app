@@ -1,0 +1,194 @@
+<!-- HERO -->
+<section id="top" class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <span class="badge">
+        <span class="dot pulse-dot"></span>
+        Microblogging hiperlocal · efêmero
+      </span>
+      <p class="eyebrow">Conceito do produto</p>
+      <h1>O radar do <span class="grad-cyan">agora</span>, no mapa do seu <span class="grad-pink">bairro</span>.</h1>
+      <p class="lede">
+        Publique em 280 caracteres. Quem está em até 2 km vê na hora. O post some em 6 horas.
+        Sem feed eterno, sem informação velha — só o que está acontecendo de verdade, agora.
+      </p>
+
+      <div class="actions">
+        <a href="#download" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
+          Baixar para Android
+        </a>
+        <a href="#como-funciona" class="btn btn-outline">Como funciona</a>
+      </div>
+
+      <ul class="hl">
+        @for (h of highlights; track h) {
+          <li>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>{{ h }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="device card">
+        <div class="device-screen">
+          <div class="mock-map">
+            <div class="map-grid"></div>
+            <span class="pulse p1"><i class="pulse-dot"></i></span>
+            <span class="pulse p2"><i class="pulse-dot"></i></span>
+            <span class="pulse p3"><i class="pulse-dot"></i></span>
+            <div class="mock-card">
+              <div class="mc-row"><strong>Praça XV · agora</strong><span>2 min</span></div>
+              <p>Brechó relâmpago abrindo até 19h. Vinis e poltrona vintage.</p>
+              <div class="mc-meta">
+                <span>📍 320 m</span><span>✓ 3 confirmações</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="float-card a">
+        <span class="eyebrow">+12 posts/h</span>
+        <strong>Centro está pulsando</strong>
+      </div>
+      <div class="float-card b">
+        <span class="eyebrow">2 km de raio</span>
+        <strong>Tudo no agora</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE -->
+<section id="sobre" class="block">
+  <div class="block-inner two">
+    <div>
+      <p class="eyebrow">O Pulsar</p>
+      <h2>O mapa que mostra o que mapas tradicionais não mostram.</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Mapas digitais mostram só o permanente. Redes sociais mostram o atemporal. O Pulsar mostra o que
+        <strong>está vivo agora</strong>: o food truck que acabou de chegar, a fila que zerou, o show de rua,
+        o brechó que abriu por 3 horas, o cachorro perdido que apareceu na praça.
+      </p>
+      <p>
+        Cada post vive 6 horas. O mapa pulsa mais forte onde a atividade é maior. Quando o evento acaba,
+        a informação some — porque informação velha não ajuda ninguém.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona" class="block">
+  <div class="block-inner">
+    <div class="head">
+      <p class="eyebrow">Como funciona</p>
+      <h2>Três passos. Sem cadastro complicado, sem fricção.</h2>
+    </div>
+    <div class="steps">
+      @for (s of steps; track s.step) {
+        <article class="step card">
+          <span class="ix">{{ s.step }}</span>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- RECURSOS -->
+<section id="recursos" class="block">
+  <div class="block-inner">
+    <div class="head">
+      <p class="eyebrow">Recursos</p>
+      <h2>Tecnologia desenhada para o agora.</h2>
+    </div>
+    <div class="features">
+      @for (f of features; track f.title) {
+        <article class="feat card">
+          <div class="icon">
+            @switch (f.icon) {
+              @case ('radar')  { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg> }
+              @case ('mic')    { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> }
+              @case ('pin')    { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.4"/></svg> }
+              @case ('shield') { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2.5 2.5L16 10"/></svg> }
+              @case ('flash')  { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg> }
+              @case ('replay') { <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg> }
+            }
+          </div>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.text }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- PÚBLICO -->
+<section id="publico" class="block">
+  <div class="block-inner">
+    <div class="head">
+      <p class="eyebrow">Para quem é</p>
+      <h2>Quem está perto. Quem quer aparecer. Quem precisa saber.</h2>
+    </div>
+    <div class="audiences">
+      @for (a of audiences; track a.title) {
+        <article class="aud card">
+          <h3>{{ a.title }}</h3>
+          <p>{{ a.text }}</p>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- PLANOS -->
+<section id="planos" class="block">
+  <div class="block-inner">
+    <div class="head">
+      <p class="eyebrow">Planos</p>
+      <h2>Comece grátis. Suba pra PRO quando precisar de alcance.</h2>
+    </div>
+    <div class="plans">
+      @for (p of plans; track p.name) {
+        <article class="plan card" [class.primary]="p.primary">
+          <div class="plan-head">
+            <span class="eyebrow">{{ p.for }}</span>
+            <h3>{{ p.name }}</h3>
+            <div class="price">{{ p.price }}</div>
+          </div>
+          <ul>
+            @for (f of p.features; track f) { <li>{{ f }}</li> }
+          </ul>
+          <a href="#download" class="btn" [class.btn-primary]="p.primary" [class.btn-outline]="!p.primary">{{ p.cta }}</a>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download" class="block">
+  <div class="cta-panel card">
+    <div>
+      <p class="eyebrow">Disponível para Android</p>
+      <h2>Coloque o agora no bolso.</h2>
+      <p class="lede" style="max-width:54ch">
+        Pulsar é nativo Android (Kotlin + Jetpack Compose). Versão Web (Pulsar PRO) para comerciantes.
+        iOS no roteiro — peça novidades por e-mail.
+      </p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn btn-primary" href="#">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 20.5V3.5l13 8.5L3 20.5z"/></svg>
+        Baixar APK
+      </a>
+      <a class="btn btn-outline" href="mailto:contato@pulsar.app">Avise-me sobre iOS</a>
+    </div>
+  </div>
+</section>

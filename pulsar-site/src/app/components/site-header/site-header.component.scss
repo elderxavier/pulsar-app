@@ -1,0 +1,74 @@
+:host { display: block; }
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  transition: background .25s ease, backdrop-filter .25s ease, border-color .25s ease;
+  border-bottom: 1px solid transparent;
+}
+.site-header.scrolled {
+  background: rgba(8, 11, 20, 0.78);
+  backdrop-filter: blur(10px);
+  border-bottom-color: var(--color-pulse-border);
+}
+
+.bar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
+}
+.brand .logo {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0,224,217,.18), rgba(255,62,142,.18));
+  border: 1px solid var(--color-pulse-border);
+  display: grid; place-items: center;
+}
+.brand .dot {
+  width: 10px; height: 10px; border-radius: 999px;
+  background: var(--color-pulse-primary);
+}
+.wordmark { background: linear-gradient(90deg, #fff, #b6f7f3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.nav {
+  display: none;
+  gap: 24px;
+  margin-left: auto;
+  font-size: 0.92rem;
+  color: var(--color-pulse-mute);
+}
+.nav a:hover { color: var(--color-pulse-ink); }
+
+.cta { margin-left: auto; display: none; }
+
+.burger {
+  margin-left: auto;
+  display: inline-flex; flex-direction: column; gap: 5px;
+  background: transparent; border: 0; padding: 8px; cursor: pointer;
+}
+.burger span {
+  width: 22px; height: 2px; background: var(--color-pulse-ink); border-radius: 2px;
+}
+
+.mobile-nav {
+  display: flex; flex-direction: column;
+  padding: 14px 20px 20px;
+  border-top: 1px solid var(--color-pulse-border);
+  gap: 12px;
+  background: rgba(8, 11, 20, 0.92);
+}
+.mobile-nav a { padding: 10px 0; color: var(--color-pulse-ink); font-weight: 500; }
+
+@media (min-width: 900px) {
+  .nav { display: inline-flex; }
+  .cta { display: inline-flex; margin-left: 12px; }
+  .burger { display: none; }
+}
