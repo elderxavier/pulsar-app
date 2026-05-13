@@ -1,0 +1,20 @@
+services:
+  pulsar:
+    build:
+      context: ./pulsar-site
+      dockerfile: ./docker/pulsar-dockerfile
+    container_name: pulsar-1
+    restart: unless-stopped
+    networks:
+      - e-mec-network
+    environment:
+      - TZ=America/Sao_Paulo
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  e-mec-network:
+    external: true

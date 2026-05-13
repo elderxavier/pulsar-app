@@ -1,0 +1,6 @@
+FROM nginx:alpine
+
+COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./docker/site/wwww /usr/share/nginx/site
+
+EXPOSE 80
