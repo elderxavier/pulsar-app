@@ -603,10 +603,6 @@ fun MapScreen(
                 viewModel = postViewModel,
                 sheetState = postSheetState,
                 onDismiss = { selectedPostId = null },
-                onEdit = { newContent ->
-                    postViewModel.updatePost(post.id, newContent)
-                    selectedPostId = null
-                },
                 onDelete = {
                     postViewModel.deletePost(post.id)
                     selectedPostId = null
@@ -739,12 +735,10 @@ fun PostDetailSheet(
     viewModel: PostViewModel,
     sheetState: SheetState,
     onDismiss: () -> Unit,
-    onEdit: (String) -> Unit,
     onDelete: () -> Unit,
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var editContent by remember { mutableStateOf(post.content) }
     var showImageFullscreen by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
 
@@ -776,34 +770,10 @@ fun PostDetailSheet(
     }
 
     if (showEditDialog) {
-        AlertDialog(
-            onDismissRequest = { showEditDialog = false },
-            title = { Text("Editar pulso", color = androidx.compose.ui.graphics.Color.White) },
-            text = {
-                OutlinedTextField(
-                    value = editContent,
-                    onValueChange = { if (it.length <= 280) editContent = it },
-                    modifier = Modifier.fillMaxWidth().height(140.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PulsarCyan,
-                        unfocusedBorderColor = androidx.compose.ui.graphics.Color(0xFF444444),
-                        focusedTextColor = androidx.compose.ui.graphics.Color.White,
-                        unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
-                        cursorColor = PulsarCyan,
-                    ),
-                    maxLines = 6,
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { showEditDialog = false; onEdit(editContent.trim()) },
-                    enabled = editContent.isNotBlank()
-                ) { Text("Salvar", color = PulsarCyan) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) { Text("Cancelar") }
-            },
-            containerColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A)
+        EditPostDialog(
+            post = post,
+            viewModel = viewModel,
+            onDismiss = { showEditDialog = false },
         )
     }
 

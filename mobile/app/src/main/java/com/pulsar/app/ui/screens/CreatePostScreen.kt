@@ -85,6 +85,7 @@ fun CreatePostScreen(
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
     val postSuccess by viewModel.postSuccess.collectAsState()
+    val uploadProgress by viewModel.uploadProgress.collectAsState()
 
     val dateFmt = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     val timeFmt = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
@@ -445,6 +446,22 @@ fun CreatePostScreen(
                     Text(error!!, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                 }
 
+                // Barra de progresso durante upload de mídia
+                if (loading && uploadProgress > 0f && uploadProgress < 1f) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LinearProgressIndicator(
+                            progress = { uploadProgress },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = PulsarCyan,
+                            trackColor = PulsarGray,
+                        )
+                        Text(
+                            "Enviando mídia... ${(uploadProgress * 100).toInt()}%",
+                            color = PulsarCyan, fontSize = 11.sp
+                        )
+                    }
+                }
+
                 Button(
                     onClick = {
                         val loc = location ?: return@Button
@@ -455,8 +472,8 @@ fun CreatePostScreen(
                             longitude = loc.longitude,
                             startsAt = Timestamp(startsAt.time),
                             expiresAt = Timestamp(expiresAt.time),
-                            imageUrl = imageUri?.toString() ?: "",
-                            videoUrl = videoUri?.toString() ?: "",
+                            imageUri = imageUri,
+                            videoUri = videoUri,
                         )
                     },
                     enabled = content.isNotBlank() && location != null && !loading && isValidDuration,

@@ -1,5 +1,7 @@
 package com.pulsar.app.data.repository
 
+import android.content.Context
+import android.net.Uri
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -12,9 +14,10 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 import java.util.Locale
 
-class PostRepository {
+class PostRepository(private val appContext: Context? = null) {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val media: MediaRepository? = appContext?.let { MediaRepository(it) }
 
     private suspend fun myPhotoURL(uid: String): String = try {
         db.collection("users").document(uid).get().await().getString("photoURL") ?: ""
@@ -27,11 +30,23 @@ class PostRepository {
         longitude: Double,
         startsAt: Timestamp,
         expiresAt: Timestamp,
-        imageUrl: String = "",
-        videoUrl: String = "",
+        imageUri: Uri? = null,
+        videoUri: Uri? = null,
+        onUploadProgress: ((Float) -> Unit)? = null,
     ): Result<String> {
         return try {
             val user = auth.currentUser ?: return Result.failure(Exception("Usuário não autenticado"))
+
+            // 1) Upload de mídia (se houver) antes de criar o doc — se falhar, não cria o post órfão.
+            val imageUrl = imageUri?.let { uri ->
+                val m = media ?: return Result.failure(Exception("MediaRepository indisponível"))
+                m.uploadImage(uri, onUploadProgress).getOrElse { return Result.failure(it) }
+            } ?: ""
+            val videoUrl = videoUri?.let { uri ->
+                val m = media ?: return Result.failure(Exception("MediaRepository indisponível"))
+                m.uploadVideo(uri, onUploadProgress).getOrElse { return Result.failure(it) }
+            } ?: ""
+
             val now = Timestamp.now()
             // Preserva a duração escolhida pelo usuário, mas ancora ao createdAt real
             val durationMs = expiresAt.toDate().time - startsAt.toDate().time
@@ -89,17 +104,84 @@ class PostRepository {
 
     suspend fun deletePost(postId: String): Result<Unit> {
         return try {
-            db.collection("posts").document(postId).delete().await()
+            val ref = db.collection("posts").document(postId)
+            val snap = ref.get().await()
+            val imageUrl = snap.getString("imageUrl") ?: ""
+            val videoUrl = snap.getString("videoUrl") ?: ""
+
+            ref.delete().await()
+
+            // Limpeza de mídia órfã (best-effort).
+            if (imageUrl.isNotEmpty()) media?.deleteByUrl(imageUrl)
+            if (videoUrl.isNotEmpty()) media?.deleteByUrl(videoUrl)
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun updatePost(postId: String, content: String): Result<Unit> {
+    /**
+     * Atualiza um post.
+     *
+     * Parâmetros de mídia seguem semântica explícita (não-nullable era ambíguo):
+     *   - newImageUri != null  → faz upload, atualiza imageUrl, apaga a antiga
+     *   - removeImage == true  → zera imageUrl e apaga a antiga
+     *   - ambos null/false     → mantém imageUrl atual
+     * Idem para vídeo.
+     */
+    suspend fun updatePost(
+        postId: String,
+        title: String? = null,
+        content: String? = null,
+        newImageUri: Uri? = null,
+        removeImage: Boolean = false,
+        newVideoUri: Uri? = null,
+        removeVideo: Boolean = false,
+        onUploadProgress: ((Float) -> Unit)? = null,
+    ): Result<Unit> {
         return try {
-            db.collection("posts").document(postId)
-                .update("content", content).await()
+            val ref = db.collection("posts").document(postId)
+            val current = ref.get().await()
+            val oldImageUrl = current.getString("imageUrl") ?: ""
+            val oldVideoUrl = current.getString("videoUrl") ?: ""
+
+            // 1) Upload das novas mídias antes de atualizar o doc (rollback fácil em caso de falha).
+            val newImageUrl: String? = when {
+                newImageUri != null -> {
+                    val m = media ?: return Result.failure(Exception("MediaRepository indisponível"))
+                    m.uploadImage(newImageUri, onUploadProgress).getOrElse { return Result.failure(it) }
+                }
+                removeImage -> ""
+                else -> null
+            }
+            val newVideoUrl: String? = when {
+                newVideoUri != null -> {
+                    val m = media ?: return Result.failure(Exception("MediaRepository indisponível"))
+                    m.uploadVideo(newVideoUri, onUploadProgress).getOrElse { return Result.failure(it) }
+                }
+                removeVideo -> ""
+                else -> null
+            }
+
+            // 2) Monta update map só com campos realmente alterados.
+            val updates = mutableMapOf<String, Any>()
+            title?.let   { updates["title"]    = it }
+            content?.let { updates["content"]  = it }
+            newImageUrl?.let { updates["imageUrl"] = it }
+            newVideoUrl?.let { updates["videoUrl"] = it }
+            if (updates.isEmpty()) return Result.success(Unit)
+
+            ref.update(updates).await()
+
+            // 3) Limpa mídia antiga no Storage (best-effort, não bloqueia).
+            if (newImageUrl != null && oldImageUrl.isNotEmpty() && oldImageUrl != newImageUrl) {
+                media?.deleteByUrl(oldImageUrl)
+            }
+            if (newVideoUrl != null && oldVideoUrl.isNotEmpty() && oldVideoUrl != newVideoUrl) {
+                media?.deleteByUrl(oldVideoUrl)
+            }
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

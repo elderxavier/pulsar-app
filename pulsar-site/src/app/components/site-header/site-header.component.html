@@ -14,7 +14,7 @@
     </nav>
 
     <div class="cta">
-      <a href="#download" class="btn btn-primary">Baixar</a>
+      <a href="/downloads/pulsar.apk" download="pulsar.apk" rel="noopener" class="btn btn-primary">Baixar</a>
     </div>
 
     <button class="burger" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
@@ -27,7 +27,7 @@
       @for (link of links; track link.anchor) {
         <a [href]="link.anchor" (click)="closeMenu()">{{ link.label }}</a>
       }
-      <a href="#download" class="btn btn-primary mt-2" (click)="closeMenu()">Baixar para Android</a>
+      <a href="/downloads/pulsar.apk" download="pulsar.apk" rel="noopener" class="btn btn-primary mt-2" (click)="closeMenu()">Baixar para Android</a>
     </div>
   }
 </header>

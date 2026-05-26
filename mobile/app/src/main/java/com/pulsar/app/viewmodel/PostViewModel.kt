@@ -1,6 +1,8 @@
 package com.pulsar.app.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.net.Uri
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.pulsar.app.data.model.Comment
@@ -10,14 +12,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PostViewModel : ViewModel() {
-    private val repository = PostRepository()
+class PostViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = PostRepository(application.applicationContext)
 
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
+
+    /** Progresso de upload de mídia em 0.0..1.0 (apenas quando há mídia). */
+    private val _uploadProgress = MutableStateFlow(0f)
+    val uploadProgress: StateFlow<Float> = _uploadProgress
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
@@ -44,19 +50,31 @@ class PostViewModel : ViewModel() {
         longitude: Double,
         startsAt: Timestamp,
         expiresAt: Timestamp,
-        imageUrl: String = "",
-        videoUrl: String = "",
+        imageUri: Uri? = null,
+        videoUri: Uri? = null,
     ) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-            val result = repository.createPost(title, content, latitude, longitude, startsAt, expiresAt, imageUrl, videoUrl)
+            _uploadProgress.value = 0f
+            val result = repository.createPost(
+                title = title,
+                content = content,
+                latitude = latitude,
+                longitude = longitude,
+                startsAt = startsAt,
+                expiresAt = expiresAt,
+                imageUri = imageUri,
+                videoUri = videoUri,
+                onUploadProgress = { _uploadProgress.value = it },
+            )
             if (result.isSuccess) {
                 _postSuccess.value = true
             } else {
                 _error.value = result.exceptionOrNull()?.message ?: "Erro ao criar post"
             }
             _loading.value = false
+            _uploadProgress.value = 0f
         }
     }
 
@@ -73,16 +91,35 @@ class PostViewModel : ViewModel() {
         }
     }
 
-    fun updatePost(postId: String, content: String) {
+    fun updatePost(
+        postId: String,
+        title: String? = null,
+        content: String? = null,
+        newImageUri: Uri? = null,
+        removeImage: Boolean = false,
+        newVideoUri: Uri? = null,
+        removeVideo: Boolean = false,
+    ) {
         viewModelScope.launch {
             _loading.value = true
-            val result = repository.updatePost(postId, content)
+            _uploadProgress.value = 0f
+            val result = repository.updatePost(
+                postId = postId,
+                title = title,
+                content = content,
+                newImageUri = newImageUri,
+                removeImage = removeImage,
+                newVideoUri = newVideoUri,
+                removeVideo = removeVideo,
+                onUploadProgress = { _uploadProgress.value = it },
+            )
             if (result.isSuccess) {
                 _postSuccess.value = true
             } else {
                 _error.value = "Erro ao editar: ${result.exceptionOrNull()?.message}"
             }
             _loading.value = false
+            _uploadProgress.value = 0f
         }
     }
 
