@@ -6,7 +6,7 @@ services:
     container_name: pulsar-1
     restart: unless-stopped
     networks:
-      - e-mec-network
+      - appsx-network
     environment:
       - TZ=America/Sao_Paulo
     healthcheck:
@@ -16,5 +16,5 @@ services:
       retries: 3
 
 networks:
-  e-mec-network:
+  appsx-network:
     external: true
