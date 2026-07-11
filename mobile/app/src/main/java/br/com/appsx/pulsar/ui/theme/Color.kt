@@ -1,4 +1,4 @@
-package com.pulsar.app.ui.theme
+package br.com.appsx.pulsar.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

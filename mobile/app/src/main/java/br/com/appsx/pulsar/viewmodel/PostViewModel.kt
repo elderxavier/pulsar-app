@@ -1,13 +1,13 @@
-package com.pulsar.app.viewmodel
+package br.com.appsx.pulsar.viewmodel
 
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
-import com.pulsar.app.data.model.Comment
-import com.pulsar.app.data.model.Post
-import com.pulsar.app.data.repository.PostRepository
+import br.com.appsx.pulsar.data.model.Comment
+import br.com.appsx.pulsar.data.model.Post
+import br.com.appsx.pulsar.data.repository.PostRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

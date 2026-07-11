@@ -1,4 +1,4 @@
-package com.pulsar.app.ui.screens
+package br.com.appsx.pulsar.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -37,11 +37,11 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.Timestamp
-import com.pulsar.app.ui.theme.PulsarBackground
-import com.pulsar.app.ui.theme.PulsarCyan
-import com.pulsar.app.ui.theme.PulsarGray
-import com.pulsar.app.ui.theme.PulsarSurface
-import com.pulsar.app.viewmodel.PostViewModel
+import br.com.appsx.pulsar.ui.theme.PulsarBackground
+import br.com.appsx.pulsar.ui.theme.PulsarCyan
+import br.com.appsx.pulsar.ui.theme.PulsarGray
+import br.com.appsx.pulsar.ui.theme.PulsarSurface
+import br.com.appsx.pulsar.viewmodel.PostViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 

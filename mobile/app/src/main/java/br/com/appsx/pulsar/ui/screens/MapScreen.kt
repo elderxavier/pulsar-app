@@ -1,4 +1,4 @@
-package com.pulsar.app.ui.screens
+package br.com.appsx.pulsar.ui.screens
 
 import android.annotation.SuppressLint
 import android.graphics.Canvas
@@ -54,10 +54,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-import com.pulsar.app.ui.theme.PulsarBackground
-import com.pulsar.app.ui.theme.PulsarCyan
-import com.pulsar.app.viewmodel.AuthViewModel
-import com.pulsar.app.viewmodel.PostViewModel
+import br.com.appsx.pulsar.ui.theme.PulsarBackground
+import br.com.appsx.pulsar.ui.theme.PulsarCyan
+import br.com.appsx.pulsar.viewmodel.AuthViewModel
+import br.com.appsx.pulsar.viewmodel.PostViewModel
 
 enum class MapType(val label: String) {
     PADRAO("Padrão"),
@@ -729,7 +729,7 @@ fun ProfileSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostDetailSheet(
-    post: com.pulsar.app.data.model.Post,
+    post: br.com.appsx.pulsar.data.model.Post,
     isOwner: Boolean,
     currentUid: String?,
     viewModel: PostViewModel,

@@ -1,4 +1,4 @@
-package com.pulsar.app
+package br.com.appsx.pulsar
 
 import android.Manifest
 import android.os.Bundle
@@ -12,12 +12,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pulsar.app.ui.screens.CreatePostScreen
-import com.pulsar.app.ui.screens.LoginScreen
-import com.pulsar.app.ui.screens.MapScreen
-import com.pulsar.app.ui.theme.PulsarTheme
-import com.pulsar.app.viewmodel.AuthViewModel
-import com.pulsar.app.viewmodel.PostViewModel
+import br.com.appsx.pulsar.ui.screens.CreatePostScreen
+import br.com.appsx.pulsar.ui.screens.LoginScreen
+import br.com.appsx.pulsar.ui.screens.MapScreen
+import br.com.appsx.pulsar.ui.theme.PulsarTheme
+import br.com.appsx.pulsar.viewmodel.AuthViewModel
+import br.com.appsx.pulsar.viewmodel.PostViewModel
 
 class MainActivity : ComponentActivity() {
 

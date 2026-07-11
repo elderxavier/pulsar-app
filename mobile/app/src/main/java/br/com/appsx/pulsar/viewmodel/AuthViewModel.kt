@@ -1,4 +1,4 @@
-package com.pulsar.app.viewmodel
+package br.com.appsx.pulsar.viewmodel
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -19,7 +19,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.pulsar.app.config.DevConfig
+import br.com.appsx.pulsar.config.DevConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

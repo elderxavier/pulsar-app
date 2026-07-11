@@ -1,4 +1,4 @@
-package com.pulsar.app.config
+package br.com.appsx.pulsar.config
 
 /**
  * DEV ONLY: flags para desenvolvimento. NÃO ativar em release.

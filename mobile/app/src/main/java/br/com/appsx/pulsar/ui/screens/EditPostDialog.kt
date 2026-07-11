@@ -1,4 +1,4 @@
-package com.pulsar.app.ui.screens
+package br.com.appsx.pulsar.ui.screens
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,12 +27,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.pulsar.app.data.model.Post
-import com.pulsar.app.ui.theme.PulsarBackground
-import com.pulsar.app.ui.theme.PulsarCyan
-import com.pulsar.app.ui.theme.PulsarGray
-import com.pulsar.app.ui.theme.PulsarSurface
-import com.pulsar.app.viewmodel.PostViewModel
+import br.com.appsx.pulsar.data.model.Post
+import br.com.appsx.pulsar.ui.theme.PulsarBackground
+import br.com.appsx.pulsar.ui.theme.PulsarCyan
+import br.com.appsx.pulsar.ui.theme.PulsarGray
+import br.com.appsx.pulsar.ui.theme.PulsarSurface
+import br.com.appsx.pulsar.viewmodel.PostViewModel
 
 /**
  * Dialog de edição de post — fullscreen.

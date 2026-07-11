@@ -1,4 +1,4 @@
-package com.pulsar.app.data.repository
+package br.com.appsx.pulsar.data.repository
 
 import android.content.Context
 import android.net.Uri
@@ -8,8 +8,8 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
-import com.pulsar.app.data.model.Comment
-import com.pulsar.app.data.model.Post
+import br.com.appsx.pulsar.data.model.Comment
+import br.com.appsx.pulsar.data.model.Post
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import java.util.Locale

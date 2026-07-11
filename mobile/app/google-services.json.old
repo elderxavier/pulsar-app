@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "200092635840",
+    "project_id": "pulsar-bab90",
+    "storage_bucket": "pulsar-bab90.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:200092635840:android:e9f35b4b0c94a922c85325",
+        "android_client_info": {
+          "package_name": "br.com.appsx.pulsar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "200092635840-vsekv87lshievkekc9sirnsim6d501bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBngYBIhu_hs_Jhw1cyIwRZTm4dc66GN-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "200092635840-vsekv87lshievkekc9sirnsim6d501bd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

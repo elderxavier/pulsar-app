@@ -1,4 +1,4 @@
-package com.pulsar.app.data.model
+package br.com.appsx.pulsar.data.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint

@@ -1,4 +1,4 @@
-package com.pulsar.app.ui.screens
+package br.com.appsx.pulsar.ui.screens
 
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,11 +21,11 @@ import androidx.compose.ui.unit.sp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.pulsar.app.R
-import com.pulsar.app.ui.theme.PulsarBackground
-import com.pulsar.app.ui.theme.PulsarCyan
-import com.pulsar.app.ui.theme.PulsarGray
-import com.pulsar.app.viewmodel.AuthViewModel
+import br.com.appsx.pulsar.R
+import br.com.appsx.pulsar.ui.theme.PulsarBackground
+import br.com.appsx.pulsar.ui.theme.PulsarCyan
+import br.com.appsx.pulsar.ui.theme.PulsarGray
+import br.com.appsx.pulsar.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(viewModel: AuthViewModel) {

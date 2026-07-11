@@ -1,4 +1,4 @@
-package com.pulsar.app.data.repository
+package br.com.appsx.pulsar.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap

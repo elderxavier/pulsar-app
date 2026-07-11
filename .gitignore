@@ -9,8 +9,13 @@ mobile/build/
 mobile/app/build/
 mobile/local.properties
 mobile/app/google-services.json
+mobile/key.properties
+mobile/upload-keystore.jks
 mobile/**/*.iml
 mobile/.idea/
+
+# Play Store release artifacts
+releases/
 
 # Firebase
 firebase/.firebase/
