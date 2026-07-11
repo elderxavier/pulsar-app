@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Política de Privacidade — Pulsar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Política de Privacidade do aplicativo Pulsar (br.com.appsx.pulsar), em conformidade com a LGPD.">
+  <meta name="theme-color" content="#0a0e1a">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #f5f7fa;
+      --mute: #8b95a8;
+      --primary: #00e0d9;
+      --border: rgba(255,255,255,0.08);
+      --card: rgba(255,255,255,0.04);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(0,224,217,0.10), transparent 60%),
+        radial-gradient(900px 500px at -10% 30%, rgba(255,62,142,0.08), transparent 60%),
+        linear-gradient(180deg, #0a0e1a 0%, #070b14 60%, #04070d 100%);
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    a { color: var(--primary); }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      backdrop-filter: blur(10px);
+      background: rgba(8,11,20,0.78);
+      border-bottom: 1px solid var(--border);
+    }
+    .bar {
+      max-width: 760px; margin: 0 auto;
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 10px;
+      color: var(--ink); text-decoration: none; font-weight: 800;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 0 rgba(0,224,217,0.55);
+    }
+    .back {
+      color: var(--mute); text-decoration: none; font-size: 0.9rem;
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 8px 14px;
+    }
+    .back:hover { color: var(--primary); border-color: var(--primary); }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .eyebrow {
+      text-transform: uppercase; letter-spacing: 0.18em;
+      font-size: 0.75rem; font-weight: 700; color: var(--primary);
+    }
+    h1 {
+      margin: 10px 0 16px;
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      line-height: 1.05; letter-spacing: -0.03em;
+    }
+    .lede { color: var(--mute); font-size: 1.05rem; margin: 0 0 12px; }
+    .meta { color: var(--mute); font-size: 0.85rem; opacity: 0.85; margin: 0 0 28px; }
+    .toc {
+      display: flex; flex-wrap: wrap; gap: 8px 14px;
+      padding: 16px 18px; margin: 0 0 36px;
+      border-radius: 16px; background: var(--card); border: 1px solid var(--border);
+    }
+    .toc a { color: var(--mute); text-decoration: none; font-size: 0.82rem; }
+    .toc a:hover { color: var(--primary); }
+    h2 {
+      margin: 36px 0 12px; font-size: 1.25rem;
+      scroll-margin-top: 80px;
+    }
+    p, li { color: var(--mute); }
+    p { margin: 0 0 14px; }
+    ul { margin: 0 0 16px; padding-left: 1.2rem; display: grid; gap: 8px; }
+    strong { color: var(--ink); }
+    footer {
+      max-width: 760px; margin: 0 auto;
+      padding: 0 20px 48px; color: var(--mute); font-size: 0.85rem;
+      border-top: 1px solid var(--border); padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a class="brand" href="/"><span class="dot"></span> Pulsar</a>
+      <a class="back" href="/">← Início</a>
+    </div>
+  </header>
+
+  <main>
+    <p class="eyebrow">Legal</p>
+    <h1>Política de Privacidade</h1>
+    <p class="lede">
+      Esta Política descreve como o Pulsar (aplicativo Android br.com.appsx.pulsar)
+      coleta, usa, armazena e compartilha dados pessoais, em conformidade com a
+      Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).
+    </p>
+    <p class="meta">Última atualização: 11 de julho de 2026 · Controlador: AppsX</p>
+
+    <nav class="toc" aria-label="Sumário">
+      <a href="#introducao">1. Introdução</a>
+      <a href="#dados">2. Dados que coletamos</a>
+      <a href="#uso">3. Como usamos</a>
+      <a href="#bases">4. Bases legais</a>
+      <a href="#compartilhamento">5. Compartilhamento</a>
+      <a href="#retencao">6. Retenção</a>
+      <a href="#seguranca">7. Segurança</a>
+      <a href="#direitos">8. Seus direitos</a>
+      <a href="#criancas">9. Crianças</a>
+      <a href="#alteracoes">10. Alterações</a>
+      <a href="#contato">11. Contato</a>
+    </nav>
+
+    <article>
+      <h2 id="introducao">1. Introdução</h2>
+      <p>
+        O Pulsar é um serviço de microblogging hiperlocal e efêmero: você publica
+        texto, foto ou áudio associados à sua localização; outros usuários próximos
+        podem ver o conteúdo no mapa; e os posts expiram automaticamente após cerca de
+        6 horas. Esta Política se aplica ao aplicativo móvel, ao site institucional e
+        aos painéis web relacionados ao serviço.
+      </p>
+
+      <h2 id="dados">2. Dados que coletamos</h2>
+      <p>Podemos tratar as seguintes categorias de dados:</p>
+      <ul>
+        <li>
+          <strong>Conta e autenticação:</strong> e-mail, nome de exibição, foto de perfil
+          (quando fornecida), identificadores de conta (ex.: UID) e dados necessários ao
+          login com e-mail/senha ou Google Sign-In.
+        </li>
+        <li>
+          <strong>Localização:</strong> coordenadas aproximadas ou precisas do dispositivo,
+          quando você concede permissão, para publicar posts geolocalizados, exibir o mapa
+          e calcular proximidade (ex.: raio de cerca de 2 km).
+        </li>
+        <li>
+          <strong>Conteúdo gerado:</strong> textos (até cerca de 280 caracteres), fotos,
+          áudios, comentários e confirmações sociais que você envia.
+        </li>
+        <li>
+          <strong>Dados técnicos:</strong> tipo de dispositivo, sistema operacional,
+          identificadores de instalação, logs de erro e métricas de desempenho necessárias
+          à operação e à segurança do serviço.
+        </li>
+        <li>
+          <strong>Comunicações:</strong> mensagens que você envia ao suporte
+          (ex.: contato@pulsar.app).
+        </li>
+      </ul>
+      <p>
+        Não solicitamos dados sensíveis além do necessário ao funcionamento do produto.
+        A localização é essencial à proposta do Pulsar; sem ela, parte das
+        funcionalidades pode ficar indisponível.
+      </p>
+
+      <h2 id="uso">3. Como usamos os dados</h2>
+      <ul>
+        <li>Criar e gerenciar sua conta e autenticação;</li>
+        <li>Exibir posts no mapa e filtrar por proximidade/tempo;</li>
+        <li>Operar recursos como mapa de calor, geofencing e confirmações;</li>
+        <li>Prevenir abuso, fraude e violações dos Termos de Uso;</li>
+        <li>Melhorar desempenho, estabilidade e experiência do produto;</li>
+        <li>Cumprir obrigações legais e responder a solicitações legítimas de autoridades.</li>
+      </ul>
+      <p>Não vendemos seus dados pessoais.</p>
+
+      <h2 id="bases">4. Bases legais (LGPD)</h2>
+      <p>Tratamos dados com base, conforme o caso, em:</p>
+      <ul>
+        <li><strong>Execução de contrato</strong> — para prestar o serviço que você solicita;</li>
+        <li><strong>Consentimento</strong> — sobretudo para acesso à localização e, quando aplicável, a recursos opcionais;</li>
+        <li><strong>Legítimo interesse</strong> — segurança, prevenção a abuso e melhorias, sempre com equilíbrio aos seus direitos;</li>
+        <li><strong>Obrigação legal</strong> — quando a lei exigir retenção ou divulgação.</li>
+      </ul>
+
+      <h2 id="compartilhamento">5. Compartilhamento e operadores</h2>
+      <p>
+        Conteúdo público que você publica (texto, mídia e posição associada ao post)
+        fica visível para outros usuários do serviço na área e no período de validade.
+      </p>
+      <p>
+        Usamos provedores de infraestrutura e autenticação, em especial serviços da
+        <strong>Google / Firebase</strong> (Authentication, Firestore, Storage e
+        relacionados), que tratam dados como operadores sob contratos e políticas próprias.
+        Esses provedores podem processar dados em servidores fora do Brasil, observados
+        os mecanismos adequados de transferência internacional previstos na LGPD.
+      </p>
+      <p>
+        Podemos divulgar dados se exigido por lei, ordem judicial ou para proteger
+        direitos, segurança e integridade do Pulsar e de seus usuários.
+      </p>
+
+      <h2 id="retencao">6. Retenção</h2>
+      <ul>
+        <li>
+          <strong>Posts:</strong> em regra, conteúdo efêmero é removido automaticamente
+          após cerca de <strong>6 horas</strong> da publicação (salvo retenção técnica
+          residual breve ou obrigação legal).
+        </li>
+        <li>
+          <strong>Conta e perfil:</strong> mantidos enquanto sua conta existir ou pelo
+          tempo necessário às finalidades desta Política.
+        </li>
+        <li>
+          <strong>Logs de segurança:</strong> pelo período necessário à prevenção de
+          incidentes e cumprimento legal.
+        </li>
+      </ul>
+      <p>
+        Ao excluir a conta, eliminamos ou anonimizamos dados pessoais associados,
+        ressalvadas obrigações legais de retenção.
+      </p>
+
+      <h2 id="seguranca">7. Segurança</h2>
+      <p>
+        Adotamos medidas técnicas e organizacionais razoáveis (controle de acesso,
+        comunicação criptografada quando disponível, práticas de desenvolvimento seguro).
+        Nenhum sistema é 100% seguro; pedimos que você proteja suas credenciais e
+        nos avise em caso de uso indevido.
+      </p>
+
+      <h2 id="direitos">8. Seus direitos</h2>
+      <p>Nos termos da LGPD, você pode solicitar:</p>
+      <ul>
+        <li>confirmação de tratamento e acesso aos dados;</li>
+        <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+        <li>anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+        <li>portabilidade, quando aplicável;</li>
+        <li>informação sobre compartilhamentos;</li>
+        <li>revogação do consentimento, quando o tratamento se basear nele;</li>
+        <li>oposição a tratamentos em hipóteses legais.</li>
+      </ul>
+      <p>
+        Para exercer esses direitos, escreva para
+        <a href="mailto:contato@pulsar.app">contato@pulsar.app</a>.
+        Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).
+      </p>
+      <p>
+        Permissões de localização e outros acessos do dispositivo podem ser revogados
+        a qualquer momento nas configurações do sistema operacional; isso pode limitar
+        funcionalidades do app.
+      </p>
+
+      <h2 id="criancas">9. Crianças e adolescentes</h2>
+      <p>
+        O Pulsar não é direcionado a menores de 13 anos. Se tomarmos conhecimento
+        de coleta indevida de dados de criança sem base legal adequada, tomaremos
+        medidas para excluir essas informações. Responsáveis legais devem supervisionar
+        o uso por adolescentes.
+      </p>
+
+      <h2 id="alteracoes">10. Alterações</h2>
+      <p>
+        Podemos atualizar esta Política para refletir mudanças no produto ou na lei.
+        A data de “Última atualização” no topo indica a versão vigente. Em alterações
+        relevantes, poderemos notificar pelo app, site ou e-mail cadastrado.
+      </p>
+
+      <h2 id="contato">11. Contato</h2>
+      <p>
+        Controlador: <strong>AppsX</strong> · Aplicativo: <strong>Pulsar</strong>
+        (br.com.appsx.pulsar).
+      </p>
+      <p>
+        Dúvidas sobre privacidade:
+        <a href="mailto:contato@pulsar.app">contato@pulsar.app</a>.
+      </p>
+    </article>
+  </main>
+
+  <footer>
+    © 2026 Pulsar / AppsX · <a href="/">pulsar.appsx.com.br</a>
+  </footer>
+</body>
+</html>

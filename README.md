@@ -1,227 +1,156 @@
-# Pulsar
+# Pulsar — O Radar do Agora
 
-Aplicativo de microblogging hiperlocal efêmero. Posts duram **6 horas** e aparecem num mapa interativo baseado na localização do usuário.
+Microblogging **hiperlocal** e **efêmero**. Usuários publicam "pulsos" geolocalizados que aparecem num mapa interativo e expiram automaticamente (TTL configurável, padrão 6h, faixa 1–72h). A ideia é criar conversas contextuais ligadas ao espaço físico e ao momento presente.
 
----
-
-## Visão Geral
-
-O Pulsar permite que usuários publiquem textos curtos (até 280 caracteres) geolocalizados. Cada post expira automaticamente após 6 horas e fica visível apenas para usuários próximos à localização onde foi criado. A ideia central é criar conversas temporárias e contextuais ligadas ao espaço físico.
+> Documento de visão do produto: [PULSAR.md](PULSAR.md). Este README é a referência **técnica** do estado atual do código.
 
 ---
 
-## Stack
-
-| Camada | Tecnologia |
-|---|---|
-| Mobile | Kotlin + Jetpack Compose (Android nativo) |
-| Web (painel) | Angular 21 + TypeScript + TailwindCSS 4 |
-| Backend / Banco | Firebase Firestore |
-| Autenticação | Firebase Authentication |
-| Infraestrutura | Firebase Hosting |
-| Build Mobile | Gradle 8.9 (Kotlin DSL) |
-| Build Web | Angular CLI 21 |
-
----
-
-## Estrutura do Monorepo
+## Arquitetura — Monorepo de 4 módulos + Firebase
 
 ```
 pulsar-app/
-├── mobile/                     # App Android (Kotlin + Compose)
-│   ├── app/
-│   │   ├── src/main/java/com/pulsar/app/
-│   │   │   ├── MainActivity.kt             # Entry point + navegação
-│   │   │   ├── data/
-│   │   │   │   ├── model/Post.kt           # Modelo de dados
-│   │   │   │   └── repository/PostRepository.kt
-│   │   │   ├── ui/screens/
-│   │   │   │   ├── LoginScreen.kt
-│   │   │   │   ├── MapScreen.kt
-│   │   │   │   └── CreatePostScreen.kt
-│   │   │   ├── ui/theme/
-│   │   │   └── viewmodel/
-│   │   │       ├── AuthViewModel.kt
-│   │   │       └── PostViewModel.kt
-│   │   └── build.gradle.kts
-│   ├── gradle/libs.versions.toml           # Version catalog
-│   └── settings.gradle.kts
-│
-├── web/                        # Painel web (Angular)
-│   ├── src/app/
-│   │   ├── core/
-│   │   │   ├── firebase.ts                 # Inicialização Firebase
-│   │   │   ├── auth.service.ts
-│   │   │   ├── auth.guard.ts
-│   │   │   └── posts.service.ts
-│   │   ├── pages/
-│   │   │   ├── login/
-│   │   │   └── dashboard/
-│   │   ├── app.routes.ts
-│   │   └── app.config.ts
-│   └── package.json
-│
-├── firebase/
-│   ├── firestore.rules                     # Regras de segurança
-│   ├── firestore.indexes.json
-│   └── firebase.json
-│
-└── CLAUDE.md
+├── mobile/        # App Android nativo (Kotlin + Jetpack Compose)      → AAB / Play Store
+├── pulsar-web/    # App/PWA do usuário final (Angular 21 + Leaflet)     → :4201
+├── pulsar-site/   # Site institucional (Angular 21)                     → :4200 / Docker (pulsar.appsx.com.br)
+├── admin/         # Painel administrativo (Angular 21 + leaflet.heat)   → :4301
+├── firebase/      # firestore.rules, storage.rules, indexes, firebase.json
+└── scripts/       # Seed, criação de usuário, deploy, limpeza de dados
 ```
+
+| Módulo | Nome do pacote | Stack | Responsabilidade |
+|---|---|---|---|
+| [mobile/](mobile/) | `com.pulsar.app` | Kotlin 2.0.21, Compose BOM 2024.11, Firebase (Auth/Firestore/**Storage**), OSMDroid, Coil | Cliente principal: criar/ver pulsos no mapa, mídia, likes, comentários |
+| [pulsar-web/](pulsar-web/) | `web-v2` | Angular 21, Firebase JS 12, Leaflet | App web do usuário: mapa, dashboard, criação de posts |
+| [pulsar-site/](pulsar-site/) | `pulsar-site` | Angular 21 | Landing page institucional (sem Firebase) |
+| [admin/](admin/) | `pulsar-admin` | Angular 21, Firebase JS 12, leaflet.heat | Moderação, usuários, métricas, config global, audit log |
+
+**Backend:** Firebase — Authentication, Firestore, Storage, Hosting. Projeto: `pulsar-bab90`.
 
 ---
 
-## Modelo de Dados
+## Modelo de Dados (Firestore)
 
-### Coleção `posts` (Firestore)
+### `/posts/{postId}` — pulsos efêmeros
 
 ```typescript
 interface Post {
-  id: string;           // documento ID (auto-gerado)
-  content: string;      // texto do post (máx. 280 chars)
+  id: string;
+  title: string;
+  content: string;               // 1–280 chars (validado nas rules)
   latitude: number;
   longitude: number;
-  geopoint: GeoPoint;   // campo nativo Firestore para queries geo
-  userId: string;       // UID do autor (Firebase Auth)
-  userName: string;     // display name do autor
+  geopoint: GeoPoint;            // para geo-queries futuras (GeoFire)
+  userId: string;
+  userName: string;
+  userPhotoURL: string;
   createdAt: Timestamp;
-  expiresAt: Timestamp; // createdAt + 6h (forçado pelas rules)
+  startsAt: Timestamp;          // agendamento (post pode começar no futuro)
+  expiresAt: Timestamp;         // createdAt + [1h..72h]; TTL nativo + rules
+  imageUrl: string;             // https:// (Firebase Storage)
+  videoUrl: string;             // https:// (Firebase Storage)
+  likedBy: string[];            // UIDs
+  likesCount: number;           // denormalizado
+  commentsCount: number;        // denormalizado
+}
+
+// Subcoleção /posts/{postId}/comments/{commentId}
+interface Comment {
+  id: string; userId: string; userName: string;
+  userPhotoURL: string; content: string; createdAt: Timestamp;
 }
 ```
 
----
+### Outras coleções
 
-## Regras de Segurança (Firestore)
-
-| Operação | Regra |
-|---|---|
-| **Leitura** | Permitida para qualquer um enquanto `request.time < expiresAt` |
-| **Criação** | Apenas usuários autenticados; `expiresAt` deve ser exatamente `createdAt + 6h`; conteúdo entre 1–280 chars |
-| **Exclusão** | Apenas o autor do post |
-| **Atualização** | Bloqueada para todos |
-
----
-
-## App Mobile (Android)
-
-### Navegação
-
-```
-login ──(auth OK)──> map ──(FAB)──> create_post
-  ^──(logout/sem auth)──┘               └──(voltar)──> map
-```
-
-### Telas
-
-- **LoginScreen** — autenticação via Firebase Auth (email/senha ou Google)
-- **MapScreen** — mapa com posts ativos na região, marcadores por coordenada, FAB para criar post
-- **CreatePostScreen** — campo de texto + submissão com geolocalização automática
-
-### Permissões necessárias
-
-```
-ACCESS_FINE_LOCATION
-ACCESS_COARSE_LOCATION
-```
-
-### Principais dependências (libs.versions.toml)
-
-| Biblioteca | Versão |
-|---|---|
-| Kotlin | 2.0.21 |
-| Jetpack Compose BOM | 2024.11.00 |
-| Firebase BOM | 33.7.0 |
-| Navigation Compose | 2.8.5 |
-| Play Services Location | 21.3.0 |
-| Android Gradle Plugin | 8.7.3 |
-
----
-
-## Web (Angular)
-
-### Rotas
-
-| Rota | Componente | Guard |
+| Coleção | Uso | Escrita |
 |---|---|---|
-| `/login` | LoginComponent | — |
-| `/dashboard` | DashboardComponent | AuthGuard |
+| `/users/{uid}` | Perfil (`displayName`, `photoURL`, `banned`, `adminRequested`) | Dono (exceto flags privilegiadas); admin gerencia flags |
+| `/admins/{uid}` | Bootstrap de admin: `{ admin, superAdmin? }` | Apenas superAdmin (bootstrap inicial via Console) |
+| `/reports/{id}` | Denúncias de posts (`status: 'open'`) | Qualquer usuário cria; admin resolve |
+| `/config/global` | Config runtime (TTL, raio, kill-switch, banner) | Apenas superAdmin |
+| `/audit/{id}` | Log append-only de ações admin | Admin cria; update/delete bloqueados |
 
-### PostsService
+---
 
-Escuta em tempo real os posts ativos via `onSnapshot`:
+## Segurança
 
-```typescript
-listenActivePosts(callback): Unsubscribe
-// query: expiresAt > now(), ordenado por expiresAt desc
-```
+Fonte da verdade: [firebase/firestore.rules](firebase/firestore.rules) e [firebase/storage.rules](firebase/storage.rules).
 
-### Principais dependências
+**Admin híbrido:** `isAdmin()` = custom claim `token.admin == true` **OU** doc `/admins/{uid}.admin == true`. Idem `superAdmin`. O modelo por doc permite bootstrap sem Cloud Functions.
 
-| Pacote | Versão |
-|---|---|
-| Angular | 21.2 |
-| Firebase JS SDK | 12.11 |
-| TailwindCSS | 4.1 |
-| TypeScript | 5.9 |
+**Regras de `posts`:**
+- **Leitura:** qualquer usuário autenticado.
+- **Criação:** autenticado, `userId == auth.uid`, `content` 1–280 chars, e `1h ≤ expiresAt − createdAt ≤ 72h` (TTL não pode ser forjado).
+- **Update:** admin, ou o dono — mas `createdAt`, `expiresAt`, `latitude`, `longitude` são **imutáveis** (só título/conteúdo/mídia editam).
+- **Delete:** admin ou dono.
+
+**TTL:** duplamente garantido — política **TTL nativa do Firestore** no campo `expiresAt` ([indexes.json](firebase/firestore.indexes.json) `fieldOverrides.ttl`) + validação de janela nas rules.
+
+**Storage** (`/posts/{userId}/{file}` e `/users/{userId}/{file}`): leitura pública; escrita só do dono; imagem/vídeo `< 10MB` (avatar `< 5MB`); mídia imutável (nova mídia = novo objeto).
 
 ---
 
 ## Como Rodar
 
-### Pré-requisitos
+**Pré-requisitos:** Node.js 20+, Java 11+ (mobile usa `jvmTarget = 11`), Android Studio Ladybug+, Firebase CLI.
 
-- Android Studio Ladybug ou superior
-- Node.js 20+
-- Java 17+
-- Firebase CLI (`npm i -g firebase-tools`)
-
-### Mobile
-
+### Mobile (Android)
 ```bash
 cd mobile
-./gradlew assembleDebug
-# ou abrir no Android Studio e rodar em emulador/dispositivo
+./gradlew assembleDebug          # build de debug
+./gradlew bundleRelease          # AAB assinado (requer key.properties)
 ```
+> Release/AAB e bump de versão: use a skill `android-build-release`. `google-services.json` deve estar em `mobile/app/`.
 
-### Web
-
+### Web (3 apps Angular)
 ```bash
-cd web
-npm install
-npm start          # dev server em http://localhost:4200
-npm run build      # build de produção em dist/web
+cd pulsar-web && npm install && npm start   # usuário  → http://localhost:4201
+cd pulsar-site && npm install && npm start   # site     → http://localhost:4200
+cd admin && npm install && npm start         # admin    → http://localhost:4301
+# build de produção em cada app:
+npm run build                                # saída em dist/<app>/browser
 ```
 
-### Firebase (regras e índices)
-
+### Firebase (rules e índices)
 ```bash
-cd firebase
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage:rules
 ```
+
+### Deploy do site institucional
+Docker + nginx edge (`pulsar.appsx.com.br`). Use a skill `pulsar-deploy` ou [scripts/publish-pulsar.sh](scripts/publish-pulsar.sh).
 
 ---
 
-## Fluxo de um Post
+## Scripts utilitários ([scripts/](scripts/))
 
-1. Usuário autenticado abre o app mobile.
-2. Toca no FAB no mapa → abre **CreatePostScreen**.
-3. Digita o texto (máx. 280 chars) e confirma.
-4. O app captura latitude/longitude via `FusedLocationProviderClient`.
-5. `PostRepository` grava no Firestore com `expiresAt = createdAt + 6h`.
-6. As **Firestore Rules** validam o TTL de 6h na escrita (ninguém pode forjar).
-7. O post aparece imediatamente no mapa para todos próximos à localização.
-8. Após 6 horas, as queries com `expiresAt > now()` deixam de retornar o documento e ele some do mapa.
+| Script | Função |
+|---|---|
+| `create-default-user.js` | Cria `admin@pulsar.app` via Identity Toolkit REST |
+| `seed-posts.js` | Popula N posts de teste num raio (TTL 48h) — `--count`, `--dry-run` |
+| `clean-legacy-media-urls.js` | Zera `imageUrl/videoUrl` legados que não são `https://` (bug de URI local) |
+| `publish-pulsar.sh` | Publica `pulsar-site` no servidor appsx (Docker) |
 
 ---
 
 ## Status do MVP
 
-- [x] Firebase Auth (mobile + web)
-- [x] Tela de mapa com localização atual (mobile)
-- [x] Criação de post com geolocalização (mobile)
-- [x] Regras Firestore com TTL de 6h forçado
-- [x] Dashboard web com posts ativos em tempo real
-- [ ] Mapa interativo no web (painel)
-- [ ] Notificações push
-- [ ] Moderação / denúncia de posts
-- [ ] Suporte a posts com imagem
+- [x] Firebase Auth (mobile + web; email/senha + anônimo)
+- [x] Mapa com posts ativos (mobile OSMDroid, web Leaflet)
+- [x] Criação de post com geolocalização, título e agendamento (`startsAt`)
+- [x] TTL configurável 1–72h (nativo + rules), padrão via `/config/global`
+- [x] Mídia (imagem/vídeo) via Firebase Storage
+- [x] Likes e comentários
+- [x] Painel admin: moderação, usuários, reports, métricas, config, audit log
+- [x] Site institucional + deploy Docker
+- [ ] Notificações push (FCM) e geofencing
+- [ ] Cloud Functions (denormalização server-side, moderação automática)
+- [ ] Verificação social ("Confirmar Presença")
+
+---
+
+## ⚠️ Débitos técnicos conhecidos
+
+1. 🔴 **[firebase/firebase.json](firebase/firebase.json)** — `hosting.public` aponta para `../web/dist/web/browser`, mas o diretório `web/` **não existe** (renomeado para `pulsar-web`). O deploy de hosting está quebrado até corrigir o path.
+2. 🟠 **Segredos versionados** — `apiKey`, senha de `admin@pulsar.app` e **senha SSH do servidor** aparecem em texto puro em `scripts/seed-posts.js`, `scripts/create-default-user.js` e `scripts/publish-pulsar.sh`. Migrar para variáveis de ambiente / segredo fora do git.
+3. 🟡 Contadores `likesCount`/`commentsCount` são denormalizados no cliente — sem Cloud Function, podem divergir sob concorrência. Preferir `runTransaction`/`FieldValue.increment`.

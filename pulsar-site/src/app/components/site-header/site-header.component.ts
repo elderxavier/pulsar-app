@@ -14,11 +14,11 @@ export class SiteHeaderComponent {
   menuOpen = signal(false);
 
   links = [
-    { label: 'O Pulsar',      anchor: '#sobre'        },
-    { label: 'Como funciona', anchor: '#como-funciona'},
-    { label: 'Recursos',      anchor: '#recursos'     },
-    { label: 'Para você',     anchor: '#publico'      },
-    { label: 'Planos',        anchor: '#planos'       },
+    { label: 'O Pulsar',      anchor: '/#sobre'        },
+    { label: 'Como funciona', anchor: '/#como-funciona'},
+    { label: 'Recursos',      anchor: '/#recursos'     },
+    { label: 'Para você',     anchor: '/#publico'      },
+    { label: 'Planos',        anchor: '/#planos'       },
   ];
 
   @HostListener('window:scroll')
